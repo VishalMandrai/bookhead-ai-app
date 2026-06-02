@@ -45,3 +45,6 @@ RUN mkdir -p /app/models
 
 # Default command (overridden per-service in docker-compose.yml)
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
+
+# ─────────────────────────────────────────────────────────────────────────────
+# ─────────────────────────────────────────────────────────────────────────────

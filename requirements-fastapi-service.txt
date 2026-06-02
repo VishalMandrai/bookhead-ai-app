@@ -1,0 +1,78 @@
+# ─────────────────────────────────────────────
+# BoolHead AI App – Python dependencies
+# ─────────────────────────────────────────────
+
+# --- Web framework ---
+fastapi==0.111.0                    # Core API framework
+uvicorn[standard]==0.29.0           # ASGI server (with websocket + reload support)
+python-multipart==0.0.9             # Required for FastAPI file uploads
+
+# --- Data validation & settings ---
+pydantic==2.7.1                     # Schema definitions, request/response models
+pydantic-settings==2.2.1            # Environment variable management via BaseSettings
+
+# --- Async & background jobs ---
+celery==5.4.0             # Distributed task queue for long-running ML jobs
+                          # We need it in FastAPI image - CAUSE - It Serializes: task name, args,
+                          # metadata and, task_id
+                          # Sends message to Redis broker; Worker process later consumes it
+
+redis==5.0.4              # Redis client (used by Celery broker + result backend)
+
+# --- ML: Object detection ---
+# torch==2.4.0                        # PyTorch – backbone for Faster-RCNN
+#                                       Use CPU wheel; GPU-enabled wheels are MUCH larger.
+# torchvision==0.19.0                 # Provides pre-trained Faster-RCNN implementation
+Pillow==10.3.0                        # Image I/O and manipulation
+
+# --- ML: OCR ---
+# paddleocr==3.4        # Alternative OCR engine (more accurate but larger model size)
+# paddlepaddle==3.2
+
+# rapidfuzz==3.14.5     # for Fuzzy Pipeline - matching OCR text & Book records from Google API
+# unidecode==1.4.0
+
+# transformers==5.7.0   # TrOCR for Text Recognition from detected spine text regions
+# sentencepiece==0.2.1  # Required by TrOCR tokenizer for small model.
+
+# --- Vector database ---
+# qdrant-client==1.9.1                      # Client for Qdrant vector DB
+
+# --- ML: Embeddings for Vector DB ---
+# sentence-transformers==3.0.1              # Generates text embeddings for vector search
+# numpy==1.26.4
+# scikit-learn==1.8.0
+
+# --- LLM integration ---
+# anthropic==0.28.0           # Anthropic SDK for Claude (recommendations + catalog)
+# llama-cpp-python==0.3.22    # For using Google's Gemma 2B (open source LLM) -> UNSTABLE for docker
+# llama-cpp-python==0.2.90    # Using lower version for Docker stability
+
+# --- Utilities ---
+# python-jose[cryptography]==3.3.0  # JWT tokens (future: librarian auth)
+aiofiles==23.2.1            # Async file I/O for saving crop images
+httpx==0.27.0               # Async HTTP client (used inside services)
+structlog==24.1.0           # Structured JSON logging
+# tenacity==8.3.0           # Retry logic for external API calls
+
+
+# --- Testing ---
+# pytest==8.2.0
+# pytest-asyncio==0.23.6    # Async test support
+# pytest-mock==3.14.0       # Mocking fixtures
+# httpx==0.27.0             # Used by FastAPI TestClient
+
+# --- Missed runtime dependencies ---
+typing_extensions==4.15.0
+packaging==26.2
+
+# local package
+#-e .
+
+# external requirements
+#click
+#Sphinx
+#coverage
+#awscli
+#flake8
+#python-dotenv>=0.5.1

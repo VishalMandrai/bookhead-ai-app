@@ -1,0 +1,101 @@
+# ─────────────────────────────────────────────────────────────────────────────
+# BookLens AI – Docker Compose
+#
+# Services:
+#   app       – FastAPI application (hot-reload in dev)
+#   worker    – Celery worker for background ML jobs
+#   redis     – Message broker for Celery + session cache
+#   qdrant    – Vector database for book embedding storage/lookup
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── FastAPI application ──────────────────────────────────────────────────
+  app:
+    image: bookhead-fastapi:v3.0
+    container_name: bookhead_fastapi_app
+    ports:
+      - "8000:8000"                     # API available at http://localhost:8000
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models            
+                                        # Gemma-2B LLM model file will be stored here
+                                        # also, the genre_embeddings.npy file
+      # - ./app:/app/app                  # Hot-reload: mount source code; use only during development
+      #                                   # Bake the source code in Image for production
+    env_file:
+      - .envtest
+    depends_on:
+      - redis
+      - qdrant
+    # ENTRYPOINT command must be Nil; Otherwise they will append at the begining of command
+    # entrypoint is used to reset the ENTRYPOINT command of Image
+    entrypoint: []
+    command: 
+      [
+        "python", 
+        "-m", 
+        "uvicorn", 
+        "main:app", 
+        "--host", 
+        "0.0.0.0", 
+        "--port", 
+        "8000"
+      ]
+      # command overrides CMD of Dockerfile
+      # command in this array format helps in - easy parsing by shell, eliminates parsing erorr
+
+  # ── Celery worker ────────────────────────────────────────────────────────
+  worker:
+    image: bookhead-worker:v3.2
+    container_name: bookhead_worker
+    volumes:
+      - ./uploads:/app/uploads
+      - ./models:/app/models
+      # - ./app:/app/app                  #Hot-reload: mount source code; use only during development
+    env_file:
+      - .envtest
+    depends_on:
+      - redis
+      - qdrant
+    entrypoint: []
+    # NOTE: One worker process with n threads; can increase n threads concurrency in Production
+    command: 
+      [
+        "python", 
+        "-m", 
+        "celery", 
+        "-A", 
+        "app.core.celery_app", 
+        "worker", 
+        "--loglevel=info", 
+        "--pool=threads", 
+        "--concurrency=2"
+      ]
+
+  # ── Redis ────────────────────────────────────────────────────────────────
+  redis:
+    image: redis
+    container_name: bookhead_redis
+    ports:
+      - "6379:6379"                     # Expose for local debugging
+    volumes:
+      - ./redis_data:/data
+
+  # ── Qdrant vector database ────────────────────────────────────────────────
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: bookhead_qdrant
+    ports:
+      - "6333:6333"             # REST API
+      - "6334:6334"             # gRPC
+    volumes:
+      - ./qdrant_storage:/qdrant/storage
+
+# ── Named volumes (persist data across container restarts) ──────────────────
+# volumes:
+  # redis_data:
+  # qdrant_storage:
+  # uploads_data:
+
+# NOTE: We are using "Bind Mounts" (and not Named Volumes) only to directories for quick and easy access.

@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- App Name suggestions: BookPhilia AI, BookLens AI, BookMagnet AI, BookHead AI, BookGlass AI, 
+   Booker's AI, Bookaholic AI, -->
+  <title>BookHead AI</title>
+  <link rel="icon" type="image/png" href="/static/css/favicon.png">
+  <meta name="description" content="AI-powered book discovery and library cataloguing from shelf photos.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="/static/css/main.css">
+</head>
+<body>
+
+<!-- ── Toast container ──────────────────────────────────────────────────── -->
+<div id="toast-container"></div>
+
+<!-- ── Header ───────────────────────────────────────────────────────────── -->
+<header class="site-header">
+  <div class="container header-inner">
+
+    <div class="logo">
+      <div class="logo-icon">📖</div>
+  BookHead<span>AI</span>
+    </div>
+
+    <nav class="header-nav" role="tablist" aria-label="Application mode">
+      <button class="nav-tab active" data-tab="reader"
+              role="tab" aria-selected="true" aria-controls="panel-reader">
+        For Readers
+      </button>
+      <button class="nav-tab" data-tab="librarian"
+              role="tab" aria-selected="false" aria-controls="panel-librarian">
+        For Librarians
+      </button>
+      <button class="nav-tab" data-tab="about"
+              role="tab" aria-selected="false" aria-controls="panel-about">
+        About App
+      </button>
+    </nav>
+
+  </div>
+</header>
+
+<!-- ── Main ─────────────────────────────────────────────────────────────── -->
+<main>
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       ABOUT APP PANEL — content is lazy-loaded by about.js from about.html
+       ════════════════════════════════════════════════════════════════════ -->
+  <section id="panel-about" class="panel" role="tabpanel" aria-labelledby="about-tab">
+    <!-- about.js injects about.html here on first visit -->
+  </section>
+
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       READER PANEL
+       ════════════════════════════════════════════════════════════════════ -->
+  <section id="panel-reader" class="panel active" role="tabpanel" aria-labelledby="reader-tab">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="container">
+        <h1>Discover Your Next Read</h1>
+        <p>
+          Photograph any bookshelf. Our AI identifies every spine, then recommends
+          the best book for your mood and taste.
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Status bar (hidden until a job starts) -->
+      <div id="reader-status" class="status-bar" style="display:none" role="status" aria-live="polite"></div>
+
+      <!-- Upload + Preferences -->
+      <div class="upload-section">
+
+        <!-- Drop zone -->
+        <div class="upload-card">
+          <h2>Upload Shelf Photos</h2>
+          <p>One or more photos of your bookshelf, taken with the spines facing you.</p>
+
+          <div class="drop-zone" id="reader-drop"
+               role="button" aria-label="Upload shelf images" tabindex="0">
+            <input type="file" id="reader-file-input"
+                   accept="image/jpeg,image/png,image/webp,image/tiff"
+                   multiple aria-label="Select shelf images">
+            <div class="drop-zone-icon">📸</div>
+            <p>Drop images here or <strong>click to browse</strong></p>
+            <p class="file-hint">JPEG · PNG · WEBP · TIFF · max 20 MB each</p>
+          </div>
+
+          <div class="file-list" id="reader-file-list"></div>
+
+          <button class="btn btn-primary btn-full" id="reader-submit" disabled>
+            🔍 Analyse Shelf
+          </button>
+        </div>
+
+        <!-- Preferences -->
+        <div class="upload-card">
+          <h2>Reading Preferences</h2>
+          <p>Tell us what you're in the mood for — all fields are optional.</p>
+
+          <div class="prefs-form">
+
+            <div class="form-group">
+              <label for="r-genres">Preferred genres</label>
+              <input type="text" id="r-genres"
+                     placeholder="e.g. science fiction, biography"
+                     aria-describedby="r-genres-hint">
+              <small id="r-genres-hint" class="muted" style="font-size:0.75rem">Comma-separated</small>
+            </div>
+
+            <div class="form-group">
+              <label for="r-mood">Mood or vibe</label>
+              <input type="text" id="r-mood"
+                     placeholder="e.g. something uplifting, dark thriller">
+            </div>
+
+            <div class="form-group">
+              <label for="r-length">Preferred book length</label>
+              <select id="r-length">
+                <option value="any">Any length</option>
+                <option value="short">Short (under 250 pages)</option>
+                <option value="medium">Medium (250–450 pages)</option>
+                <option value="long">Long (450+ pages)</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="r-max-recs">Number of recommendations</label>
+              <input type="number" id="r-max-recs"
+                     value="3" min="1" max="20">
+            </div>
+
+          </div>
+        </div>
+
+      </div><!-- /upload-section -->
+
+      <!-- Results (rendered by reader.js) -->
+      <div id="reader-results"></div>
+
+    </div><!-- /container -->
+
+  </section><!-- /panel-reader -->
+
+
+  <!-- ════════════════════════════════════════════════════════════════════
+       LIBRARIAN PANEL
+       ════════════════════════════════════════════════════════════════════ -->
+  <section id="panel-librarian" class="panel" role="tabpanel" aria-labelledby="librarian-tab">
+
+    <!-- Hero -->
+    <div class="hero">
+      <div class="container">
+        <h1>Catalogue Your Collection</h1>
+        <p>
+          Upload photos of every shelf. BookHead AI identifies each book,
+          genre-codes it, and exports a structured catalog you can download.
+        </p>
+      </div>
+    </div>
+
+    <div class="container">
+
+      <!-- Status bar -->
+      <div id="lib-status" class="status-bar" style="display:none" role="status" aria-live="polite"></div>
+
+      <!-- Upload card -->
+      <div class="upload-section" style="grid-template-columns:1fr">
+
+        <div class="upload-card">
+          <h2>Upload Shelf Photos</h2>
+          <p>Include every shelf in your library — you can upload multiple images at once.</p>
+
+          <div class="drop-zone" id="lib-drop"
+               role="button" aria-label="Upload shelf images" tabindex="0">
+            <input type="file" id="lib-file-input"
+                   accept="image/jpeg,image/png,image/webp,image/tiff"
+                   multiple aria-label="Select shelf images">
+            <div class="drop-zone-icon">🏛️</div>
+            <p>Drop images here or <strong>click to browse</strong></p>
+            <p class="file-hint">JPEG · PNG · WEBP · TIFF · max 20 MB each</p>
+          </div>
+
+          <div class="file-list" id="lib-file-list"></div>
+
+          <button class="btn btn-primary btn-full" id="lib-submit" disabled>
+            📚 Generate Catalog
+          </button>
+        </div>
+
+      </div><!-- /upload-section -->
+
+      <!-- Review section (rendered by librarian.js when AWAITING_REVIEW) -->
+      <div id="lib-review-section"></div>
+
+      <!-- Catalog table (rendered by librarian.js on SUCCESS) -->
+      <div id="lib-catalog-section"></div>
+
+    </div><!-- /container -->
+
+  </section><!-- /panel-librarian -->
+
+</main>
+
+<!-- ── Footer ────────────────────────────────────────────────────────────── -->
+<footer class="site-footer">
+  <div class="container">
+    BookHead AI &mdash; Powered by Faster-RCNN · PaddleOCR · Gemma-2B LLM · MiniLM-L6-v2 · Qdrant
+  </div>
+</footer>
+
+<!-- ── Scripts (ES module, deferred) ─────────────────────────────────────── -->
+<script type="module" src="/static/js/app.js"></script>
+
+</body>
+</html>

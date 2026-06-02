@@ -1,0 +1,305 @@
+<!--
+  about.html — BookHead AI · About App Panel
+  This file is NOT a standalone page. It is fetched at runtime by about.js
+  and injected into #panel-about inside index.html.
+-->
+
+<div class="about-wrap">
+
+  <!-- ── Hero ──────────────────────────────────────────────────────────── -->
+  <div class="hero">
+    <div class="container">
+      <h1>About BookHead AI</h1>
+      <p>
+        An intelligent shelf-to-catalogue engine for ardent readers and librarians alike —
+        powered entirely by open source AI models.
+      </p>
+    </div>
+  </div>
+
+  <div class="container">
+
+    <!-- ── What is BookHead AI? ──────────────────────────────────────── -->
+    <section class="about-section">
+      <div class="about-section-label">What it does</div>
+      <h2 class="about-section-title">One app. Two superpowers.</h2>
+
+      <div class="about-cards-2col">
+
+        <div class="about-feature-card">
+          <div class="about-feature-icon">📖</div>
+          <h3>For Readers</h3>
+          <p>
+            Snap a photo of any bookshelf. BookHead AI reads every spine, looks up
+            each book, and surfaces the title that best matches your mood, favourite
+            genres, and preferred length — so your next great read is never more than
+            a photograph away.
+          </p>
+        </div>
+
+        <div class="about-feature-card">
+          <div class="about-feature-icon">🏛️</div>
+          <h3>For Librarians</h3>
+          <p>
+            Upload photos of an entire library. The app automatically identifies
+            every book on every shelf, genre-codes each entry, enriches it with
+            metadata from the Google Books API, and exports a fully structured,
+            download-ready catalogue — no manual data entry required.
+          </p>
+        </div>
+
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── Pipeline ──────────────────────────────────────────────────── -->
+    <section class="about-section">
+      <div class="about-section-label">How it works</div>
+      <h2 class="about-section-title">The AI Pipeline</h2>
+      <p class="about-section-intro">
+        Every image you upload travels through a six-stage intelligence pipeline
+        before a single result reaches your screen.
+      </p>
+
+      <div class="pipeline-steps">
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">01</div>
+          <div class="pipeline-content">
+            <h4>Book Detection <span class="pipeline-model-tag">Faster R-CNN</span></h4>
+            <p>
+              A Faster R-CNN object-detection model scans the shelf photograph and
+              draws a precise bounding box around every individual book spine it
+              finds — even on crowded, cluttered shelves.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">02</div>
+          <div class="pipeline-content">
+            <h4>Spine OCR <span class="pipeline-model-tag">PaddleOCR</span></h4>
+            <p>
+              Each cropped spine is fed through PaddleOCR's two-stage pipeline:
+              a <em>text-detection</em> model locates text regions, then a
+              <em>text-recognition</em> model transcribes the characters —
+              handling rotated, embossed, and foil-stamped typography.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">03</div>
+          <div class="pipeline-content">
+            <h4>Metadata Lookup <span class="pipeline-model-tag">Google Books API</span></h4>
+            <p>
+              The raw OCR text is pre-processed and cleaned, then used to query the
+              free Google Books API. Candidate records — title, author, description,
+              page count, genre labels, cover thumbnail — are pulled for each book.
+              Fuzzy matching against the OCR string selects the best-fitting record.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">04</div>
+          <div class="pipeline-content">
+            <h4>Summary Generation <span class="pipeline-model-tag">Gemma-2B LLM</span></h4>
+            <p>
+              Google's Gemma-2B language model distils the book's description into a
+              concise, reader-friendly summary — consistent in tone and length
+              regardless of how verbose or sparse the source description is.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">05</div>
+          <div class="pipeline-content">
+            <h4>Genre Classification <span class="pipeline-model-tag">all-MiniLM-L6-v2</span></h4>
+            <p>
+              Each book is matched against a curated master list of genre labels and
+              codes. The <em>all-MiniLM-L6-v2</em> sentence-embedding model vectorises
+              both the candidate genre labels and the book's own description, then
+              picks the closest genre by cosine similarity — no hand-written rules needed.
+            </p>
+          </div>
+        </div>
+
+        <div class="pipeline-step">
+          <div class="pipeline-num">06</div>
+          <div class="pipeline-content">
+            <h4>Personalised Ranking <span class="pipeline-model-tag">all-MiniLM-L6-v2</span></h4>
+            <p>
+              Reader preferences (genres, mood, length) are embedded alongside every
+              book's metadata. A composite similarity score — weighting genre match,
+              mood alignment, description relevance, and length fit — is computed for
+              each title, and the shelf is re-ranked from most to least relevant.
+            </p>
+          </div>
+        </div>
+
+      </div><!-- /pipeline-steps -->
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── Models at a glance ────────────────────────────────────────── -->
+    <section class="about-section">
+      <div class="about-section-label">Under the hood</div>
+      <h2 class="about-section-title">5 Models. One Seamless Flow.</h2>
+      <p class="about-section-intro">
+        BookHead AI chains five specialised open models — no single model does
+        everything, but together they cover perception, language, and semantics.
+      </p>
+
+      <div class="models-grid">
+
+        <div class="model-card">
+          <div class="model-icon">🔍</div>
+          <div class="model-info">
+            <div class="model-name">Faster R-CNN</div>
+            <div class="model-task">Object Detection</div>
+            <p class="model-desc">Localises and crops individual book spines from shelf photos with high precision.</p>
+          </div>
+        </div>
+
+        <div class="model-card">
+          <div class="model-icon">👁️</div>
+          <div class="model-info">
+            <div class="model-name">PaddleOCR · Detection</div>
+            <div class="model-task">Text Localisation</div>
+            <p class="model-desc">Finds text line regions within each cropped spine image.</p>
+          </div>
+        </div>
+
+        <div class="model-card">
+          <div class="model-icon">🔤</div>
+          <div class="model-info">
+            <div class="model-name">PaddleOCR · Recogniser</div>
+            <div class="model-task">Text Recognition</div>
+            <p class="model-desc">Converts detected text regions into UTF-8 strings — handles stylised and rotated type.</p>
+          </div>
+        </div>
+
+        <div class="model-card">
+          <div class="model-icon">✍️</div>
+          <div class="model-info">
+            <div class="model-name">Gemma-2B</div>
+            <div class="model-task">LLM · Summarisation</div>
+            <p class="model-desc">Generates crisp, consistent book summaries from raw API descriptions.</p>
+          </div>
+        </div>
+
+        <div class="model-card">
+          <div class="model-icon">🧮</div>
+          <div class="model-info">
+            <div class="model-name">all-MiniLM-L6-v2</div>
+            <div class="model-task">Sentence Embeddings · Matching</div>
+            <p class="model-desc">Powers both genre classification and personalised recommendation via vector similarity.</p>
+          </div>
+        </div>
+
+      </div><!-- /models-grid -->
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── Tech stack ────────────────────────────────────────────────── -->
+    <section class="about-section">
+      <div class="about-section-label">Tech stack</div>
+      <h2 class="about-section-title">Built on open tools</h2>
+
+      <div class="tech-pills-wrap">
+        <span class="tech-pill">Python</span>
+        <span class="tech-pill">FastAPI</span>
+        <span class="tech-pill">Qdrant DB</span>
+        <span class="tech-pill">Celery</span>
+        <span class="tech-pill">Redis</span>
+        <span class="tech-pill">Faster R-CNN</span>
+        <span class="tech-pill">PaddleOCR</span>
+        <span class="tech-pill">Gemma-2B</span>
+        <span class="tech-pill">all-MiniLM-L6-v2</span>
+        <span class="tech-pill">Google Books API</span>
+        <span class="tech-pill">PyTorch</span>
+        <span class="tech-pill">OpenCV</span>
+        <span class="tech-pill">HTML</span>
+        <span class="tech-pill">Vanilla JS</span>
+      </div>
+    </section>
+
+    <hr class="divider">
+
+    <!-- ── Socials / CTA ─────────────────────────────────────────────── -->
+    <section class="about-section about-socials-section">
+      <div class="about-section-label">The builder</div>
+      <h2 class="about-section-title">Let's connect</h2>
+      <p class="about-section-intro">
+        BookHead AI is a passion project. If it sparked an idea, found a bug, or
+        you just want to talk books and AI — reach out.
+      </p>
+
+      <div class="socials-row">
+
+        <a href="https://github.com/VishalMandrai" target="_blank" rel="noopener"
+           class="social-btn social-btn--github" aria-label="GitHub">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483
+                     0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466
+                     -.908-.62.069-.608.069-.608 1.003.07 1.531 1.032 1.531 1.032.892 1.53 2.341 1.088 2.91.832
+                     .092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688
+                     -.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0 1 12 6.844
+                     a9.59 9.59 0 0 1 2.504.337c1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651
+                     .64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855
+                     0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.02 10.02 0 0 0 22 12.017
+                     C22 6.484 17.522 2 12 2Z"/>
+          </svg>
+          GitHub
+        </a>
+
+        <a href="https://www.linkedin.com/in/vishal-mandrai999/" target="_blank" rel="noopener"
+           class="social-btn social-btn--linkedin" aria-label="LinkedIn">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853
+                     0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9
+                     1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286ZM5.337
+                     7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063
+                     2.065Zm1.782 13.019H3.555V9h3.564v11.452ZM22.225 0H1.771C.792 0 0
+                     .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24
+                     23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003Z"/>
+          </svg>
+          LinkedIn
+        </a>
+
+        <a href="https://x.com/vishman__" target="_blank" rel="noopener"
+           class="social-btn social-btn--x" aria-label="X / Twitter">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+            <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746
+                     l7.73-8.835L1.254 2.25H8.08l4.713 6.231 5.45-6.231Zm-1.161 17.52h1.833L7.084 4.126
+                     H5.117L17.083 19.77Z"/>
+          </svg>
+          X · Twitter
+        </a>
+
+        <a href="https://yourportfolio.dev" target="_blank" rel="noopener"
+           data-social="portfolio" 
+           class="social-btn social-btn--portfolio" aria-label="Portfolio website">
+          <svg class="social-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+               stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="2" y1="12" x2="22" y2="12"/>
+            <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10
+                     15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+          </svg>
+          Portfolio
+        </a>
+
+      </div><!-- /socials-row -->
+    </section>
+
+    <!-- bottom breathing room -->
+    <div style="height: 64px"></div>
+
+  </div><!-- /container -->
+</div><!-- /about-wrap -->

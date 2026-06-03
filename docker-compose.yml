@@ -1,8 +1,8 @@
 # ─────────────────────────────────────────────────────────────────────────────
-# BookLens AI – Docker Compose
+# BookHead AI – Docker Compose
 #
 # Services:
-#   app       – FastAPI application (hot-reload in dev)
+#   app       – FastAPI application
 #   worker    – Celery worker for background ML jobs
 #   redis     – Message broker for Celery + session cache
 #   qdrant    – Vector database for book embedding storage/lookup
@@ -10,7 +10,7 @@
 
 services:
 
-  # ── FastAPI application ──────────────────────────────────────────────────
+  # ── FastAPI Service ────────────────────────────────────────────────────────
   app:
     build:
       context: .
@@ -48,7 +48,7 @@ services:
       # command overrides CMD of Dockerfile
       # command in this array format helps in - easy parsing by shell, eliminates parsing erorr
 
-  # ── Celery worker ────────────────────────────────────────────────────────
+  # ── Celery worker ──────────────────────────────────────────────────────────────
   worker:
     build:
       context: .
@@ -79,7 +79,7 @@ services:
         "--concurrency=2"
       ]
 
-  # ── Redis ────────────────────────────────────────────────────────────────
+  # ── Redis ────────────────────────────────────────────────────────────────────────
   redis:
     image: redis
     container_name: bookhead_redis
@@ -88,7 +88,7 @@ services:
     volumes:
       - ./redis_data:/data
 
-  # ── Qdrant vector database ────────────────────────────────────────────────
+  # ── Qdrant vector database ──────────────────────────────────────────────────────────
   qdrant:
     image: qdrant/qdrant:v1.9.2
     container_name: bookhead_qdrant
@@ -98,7 +98,7 @@ services:
     volumes:
       - ./qdrant_storage:/qdrant/storage
 
-# ── Named volumes (persist data across container restarts) ──────────────────
+# ── Named volumes (persist data across container restarts) ─────────────────────────────
 # volumes:
   # redis_data:
   # qdrant_storage:

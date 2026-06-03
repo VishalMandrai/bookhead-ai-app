@@ -26,7 +26,7 @@ from fastapi.testclient import TestClient
 from PIL import Image as PILImage
 
 from app.core.config import Settings, get_settings
-from app.main import create_app
+from main import create_app
 from app.api.dependencies import (
     get_detection_service,
     get_ocr_service,
@@ -259,6 +259,13 @@ def app(settings, stub_review_queue):
     Returns a FastAPI app instance with all service dependencies overridden
     by lightweight stubs. No ML models, no Redis, no Qdrant needed.
     """
+    import os
+    # Ensure upload dir and frontend dirs exist for static file serving
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    os.makedirs("frontend/static/css", exist_ok=True)
+    os.makedirs("frontend/static/js", exist_ok=True)
+    os.makedirs("frontend/templates", exist_ok=True)
+
     # Override get_settings so the app uses test settings
     get_settings.cache_clear()
 

@@ -37,11 +37,11 @@ import cv2
 
 # ── Constants ──────────────────────────────────────────────────────────────────
 
-# MIN_OCR_WIDTH_PX = 64 
+MIN_OCR_WIDTH_PX = 64 
 # Minimum width (px) at which we consider the crop large enough for OCR.
 # If below this, then upscaling significantly improves accuracy. 
  
-# TARGET_OCR_WIDTH_PX = 256
+TARGET_OCR_WIDTH_PX = 256
 # Target width for upscaled narrow crops.
 
 # Candidate rotations to try during orientation detection (degrees clockwise)

@@ -97,6 +97,7 @@ rough.txt
 /redis_data
 /bookhead_rough_app
 /uploads
+/.github
 
 # Virtual environments
 .venv/

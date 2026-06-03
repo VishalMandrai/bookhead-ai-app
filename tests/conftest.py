@@ -37,7 +37,7 @@ from app.api.dependencies import (
     get_catalog_service,
     get_recommendation_service,
 )
-from app.models.book import BoundingBox, BookCorrection, BookRecord, OCRResult
+from app.models.book import BoundingBox, BookCorrection, BookRecord, OCRResult, OCRValidatedResult
 from app.models.request import ReaderPreferences
 from app.services.base import (
     BaseDetectionService,
@@ -129,14 +129,14 @@ class StubReviewQueueService(BaseReviewQueueService):
         # session_id → {"flagged": [...], "corrections": [...], "complete": bool}
         self._store: dict = {}
 
-    def create_session(self, job_id: str, flagged_books: list[OCRResult]) -> None:
+    def create_session(self, job_id: str, flagged_books: list[OCRValidatedResult]) -> None:
         self._store[job_id] = {
             "flagged": flagged_books,
             "corrections": [],
             "complete": False,
         }
 
-    def get_pending(self, job_id: str) -> list[OCRResult]:
+    def get_pending(self, job_id: str) -> list[OCRValidatedResult]:
         self._assert_exists(job_id)
         return self._store[job_id]["flagged"]
 
@@ -172,6 +172,7 @@ class StubResultMerger(BaseResultMerger):
                 author=ocr.raw_author,
                 crop_image_path=ocr.crop_image_path,
                 ocr_confidence=ocr.confidence,
+                ori_ocr_ext_spine_txt=ocr.raw_title,
                 source="ocr_auto",
             ))
 
@@ -184,7 +185,10 @@ class StubResultMerger(BaseResultMerger):
                 title=correction.corrected_title,
                 author=correction.corrected_author,
                 crop_image_path=original.crop_image_path if original else "",
-                ocr_confidence=original.confidence if original else 0.0,
+                ocr_confidence=(getattr(original, "ocr_confidence", None)
+                                if original is not None else 0.0) or getattr(original, "confidence", 0.0),
+                ori_ocr_ext_spine_txt=(getattr(original, "ori_ocr_ext_spine_txt", None)
+                                      if original is not None else "") or getattr(original, "raw_title", ""),
                 source="human_corrected",
             ))
 
@@ -348,4 +352,5 @@ def sample_book_record() -> BookRecord:
         source="ocr_auto",
         genre="Fiction",
         genre_code="FIC",
+        ori_ocr_ext_spine_txt="The Great Gatsby",
     )

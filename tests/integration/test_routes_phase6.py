@@ -133,16 +133,19 @@ class TestLibrarianRoutePhase6:
             response = client.get(f"/librarian/catalog/{job_id}")
         assert response.json()["state"] == "SUCCESS"
 
-    def test_submit_corrections_dispatches_resume_task(self, client, stub_review_queue):
+    def test_submit_corrections_dispatches_resume_task(self, client, settings):
         """POST /librarian/review/{job_id} must dispatch resume_after_review."""
         job_id = str(uuid.uuid4())
         book_id = str(uuid.uuid4())
-        from app.models.book import OCRResult
-        stub_review_queue.create_session(job_id, [
-            OCRResult(
+        from app.models.book import OCRValidatedResult
+        from app.services.review_queue import RedisReviewQueueService
+
+        svc = RedisReviewQueueService(redis_url=settings.redis_url, ttl_seconds=settings.review_session_ttl_seconds)
+        svc.create_session(job_id, [
+            OCRValidatedResult(
                 book_id=book_id, crop_image_path="crop.jpg",
-                raw_title="Garbled", raw_author="???",
-                confidence=0.30, flagged_for_review=True,
+                ori_ocr_ext_spine_txt="Garbled", title="Garbled", author="???",
+                ocr_confidence=0.30, flagged_for_review=True,
             )
         ])
 
@@ -159,16 +162,17 @@ class TestLibrarianRoutePhase6:
         assert response.status_code == 200
         assert response.json()["state"] == "STARTED"
 
-    def test_submit_corrections_incomplete_returns_422(self, client, stub_review_queue):
+    def test_submit_corrections_incomplete_returns_422(self, client, settings):
         job_id = str(uuid.uuid4())
         book_id_1 = str(uuid.uuid4())
         book_id_2 = str(uuid.uuid4())
-        from app.models.book import OCRResult
-        stub_review_queue.create_session(job_id, [
-            OCRResult(book_id=book_id_1, crop_image_path="a.jpg", raw_title="A",
-                      raw_author="", confidence=0.3, flagged_for_review=True),
-            OCRResult(book_id=book_id_2, crop_image_path="b.jpg", raw_title="B",
-                      raw_author="", confidence=0.2, flagged_for_review=True),
+        from app.models.book import OCRValidatedResult
+        from app.services.review_queue import RedisReviewQueueService
+
+        svc = RedisReviewQueueService(redis_url=settings.redis_url, ttl_seconds=settings.review_session_ttl_seconds)
+        svc.create_session(job_id, [
+            OCRValidatedResult(book_id=book_id_1, crop_image_path="a.jpg", ori_ocr_ext_spine_txt="A", title="A", author="", ocr_confidence=0.3, flagged_for_review=True),
+            OCRValidatedResult(book_id=book_id_2, crop_image_path="b.jpg", ori_ocr_ext_spine_txt="B", title="B", author="", ocr_confidence=0.2, flagged_for_review=True),
         ])
         response = client.post(
             f"/librarian/review/{job_id}",

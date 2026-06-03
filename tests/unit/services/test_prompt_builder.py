@@ -31,6 +31,7 @@ def _make_book(title: str = "Dune", author: str = "Frank Herbert") -> BookRecord
         crop_image_path="crops/job/book_0.jpg",
         ocr_confidence=0.88,
         source="ocr_auto",
+        ori_ocr_ext_spine_txt=title,
     )
 
 

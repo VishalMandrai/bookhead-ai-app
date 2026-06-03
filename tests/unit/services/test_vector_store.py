@@ -72,6 +72,7 @@ def _make_book(
         genre="Science Fiction",
         genre_code="SCI",
         summary="A sweeping sci-fi epic.",
+        ori_ocr_ext_spine_txt=title,
     )
 
 

@@ -59,6 +59,7 @@ def _make_book(title: str = "Dune") -> BookRecord:
         crop_image_path=f"crops/job/{bid[:6]}.jpg",
         ocr_confidence=0.90,
         source="ocr_auto",
+        ori_ocr_ext_spine_txt=title,
     )
 
 

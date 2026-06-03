@@ -20,7 +20,7 @@ from unittest.mock import MagicMock, call, patch
 import pytest
 from PIL import Image as PILImage
 
-from app.models.book import BookCorrection, BookRecord, BoundingBox, OCRResult
+from app.models.book import BookCorrection, BookRecord, BoundingBox, OCRResult, OCRValidatedResult
 from app.services.confidence_router import ThresholdConfidenceRouter
 from app.services.result_merger import DefaultResultMerger
 
@@ -34,14 +34,20 @@ def _write_image(tmp_path: Path, name: str = "shelf.jpg") -> str:
     return str(p)
 
 
-def _make_ocr(book_id: str, confidence: float = 0.90) -> OCRResult:
-    return OCRResult(
+def _make_ocr(book_id: str, confidence: float = 0.90) -> tuple[str, float]:
+    return (f"Book {book_id[:4]}", confidence)
+
+
+def _make_validated_ocr(book_id: str, confidence: float = 0.90) -> OCRValidatedResult:
+    text = f"Book {book_id[:4]}"
+    return OCRValidatedResult(
         book_id=book_id,
         crop_image_path=f"crops/job/{book_id[:6]}.jpg",
-        raw_title=f"Book {book_id[:4]}",
-        raw_author="Author",
-        confidence=confidence,
-        flagged_for_review=False,
+        ori_ocr_ext_spine_txt=text,
+        title=text,
+        author="Author",
+        ocr_confidence=confidence,
+        flagged_for_review=confidence < 0.75,
     )
 
 
@@ -53,6 +59,7 @@ def _make_book_record(book_id: str) -> BookRecord:
         crop_image_path=f"crops/job/{book_id[:6]}.jpg",
         ocr_confidence=0.90,
         source="ocr_auto",
+        ori_ocr_ext_spine_txt=f"Book {book_id[:4]}",
     )
 
 

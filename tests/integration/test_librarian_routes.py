@@ -78,24 +78,27 @@ class TestLibrarianReviewQueue:
         assert response.status_code == 404
         assert response.json()["error"] == "review_session_not_found"
 
-    def test_get_review_returns_flagged_books(self, client, stub_review_queue, sample_image_bytes):
+    def test_get_review_returns_flagged_books(self, client, settings, sample_image_bytes):
         """
         After seeding the review queue, GET /review/{job_id} must return
         the flagged books with crop image URLs.
         """
-        from app.models.book import OCRResult
+        from app.models.book import OCRValidatedResult
+        from app.services.review_queue import RedisReviewQueueService
 
         # Seed a review session directly (simulates pipeline completion)
         job_id = str(uuid.uuid4())
-        flagged = OCRResult(
+        flagged = OCRValidatedResult(
             book_id=str(uuid.uuid4()),
             crop_image_path="some_crop.jpg",
-            raw_title="Blurry Txt",
-            raw_author="Unknwn",
-            confidence=0.40,
+            ori_ocr_ext_spine_txt="Blurry Txt",
+            title="Blurry Txt",
+            author="Unknwn",
+            ocr_confidence=0.40,
             flagged_for_review=True,
         )
-        stub_review_queue.create_session(job_id, [flagged])
+        svc = RedisReviewQueueService(redis_url=settings.redis_url, ttl_seconds=settings.review_session_ttl_seconds)
+        svc.create_session(job_id, [flagged])
 
         response = client.get(f"/librarian/review/{job_id}")
 
@@ -112,7 +115,7 @@ class TestLibrarianReviewQueue:
         # Crop image URL must be a /uploads/ path
         assert item["crop_image_url"].startswith("/uploads/")
 
-    def test_submit_corrections_success(self, client, stub_review_queue):
+    def test_submit_corrections_success(self, client, settings):
         """
         A valid correction submission for all flagged books must return 200
         and a STARTED status.
@@ -121,16 +124,20 @@ class TestLibrarianReviewQueue:
         book_id = str(uuid.uuid4())
 
         # Seed the review queue with one flagged book
-        from app.models.book import OCRResult
-        flagged = OCRResult(
+        from app.models.book import OCRValidatedResult
+        from app.services.review_queue import RedisReviewQueueService
+
+        flagged = OCRValidatedResult(
             book_id=book_id,
             crop_image_path="crop.jpg",
-            raw_title="Grbld Nme",
-            raw_author="???",
-            confidence=0.35,
+            ori_ocr_ext_spine_txt="Grbld Nme",
+            title="Grbld Nme",
+            author="??",
+            ocr_confidence=0.35,
             flagged_for_review=True,
         )
-        stub_review_queue.create_session(job_id, [flagged])
+        svc = RedisReviewQueueService(redis_url=settings.redis_url, ttl_seconds=settings.review_session_ttl_seconds)
+        svc.create_session(job_id, [flagged])
 
         # Submit correction
         response = client.post(
@@ -154,7 +161,7 @@ class TestLibrarianReviewQueue:
         # Verify the correction was stored
         assert stub_review_queue.is_complete(job_id) is True
 
-    def test_incomplete_submission_returns_422(self, client, stub_review_queue):
+    def test_incomplete_submission_returns_422(self, client, settings):
         """
         Submitting corrections that omit some flagged book_ids must return 422.
         """
@@ -162,12 +169,13 @@ class TestLibrarianReviewQueue:
         book_id_1 = str(uuid.uuid4())
         book_id_2 = str(uuid.uuid4())
 
-        from app.models.book import OCRResult
-        stub_review_queue.create_session(job_id, [
-            OCRResult(book_id=book_id_1, crop_image_path="a.jpg",
-                      raw_title="A", raw_author="", confidence=0.3, flagged_for_review=True),
-            OCRResult(book_id=book_id_2, crop_image_path="b.jpg",
-                      raw_title="B", raw_author="", confidence=0.2, flagged_for_review=True),
+        from app.models.book import OCRValidatedResult
+        from app.services.review_queue import RedisReviewQueueService
+
+        svc = RedisReviewQueueService(redis_url=settings.redis_url, ttl_seconds=settings.review_session_ttl_seconds)
+        svc.create_session(job_id, [
+            OCRValidatedResult(book_id=book_id_1, crop_image_path="a.jpg", ori_ocr_ext_spine_txt="A", title="A", author="", ocr_confidence=0.3, flagged_for_review=True),
+            OCRValidatedResult(book_id=book_id_2, crop_image_path="b.jpg", ori_ocr_ext_spine_txt="B", title="B", author="", ocr_confidence=0.2, flagged_for_review=True),
         ])
 
         # Only submit correction for book 1, omit book 2

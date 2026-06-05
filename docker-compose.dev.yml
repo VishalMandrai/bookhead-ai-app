@@ -15,7 +15,6 @@ services:
     build:
       context: .
       dockerfile: ./docker/fastapi/Dockerfile
-    # image: bookhead-fastapi:v3.0
     container_name: bookhead_fastapi_app
     ports:
       - "8000:8000"                     # API available at http://localhost:8000
@@ -27,7 +26,7 @@ services:
       # - ./app:/app/app                  # Hot-reload: mount source code; use only during development
       #                                   # Bake the source code in Image for production
     env_file:
-      - .envtest
+      - .env-prod
     depends_on:
       - redis
       - qdrant
@@ -53,14 +52,13 @@ services:
     build:
       context: .
       dockerfile: ./docker/celery-worker/Dockerfile
-    # image: bookhead-worker:v3.2
     container_name: bookhead_worker
     volumes:
       - ./uploads:/app/uploads
       - ./models:/app/models
       # - ./app:/app/app                  #Hot-reload: mount source code; use only during development
     env_file:
-      - .envtest
+      - .env-prod
     depends_on:
       - redis
       - qdrant

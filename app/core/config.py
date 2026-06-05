@@ -101,7 +101,7 @@ class Settings(BaseSettings):
     min_conf_thresh_text_rec: float = 0.7      
     
     # Google Books API for accessing book data based on OCR extracted text
-    google_books_api_key: str = "AIzaSyArSX6s87MjIriVSY4PX1CmPbumi_j1P74"
+    google_books_api_key: str = ""
     
     # Use GPU for EasyOCR inference (requires CUDA-enabled machine)
     ocr_gpu: bool = False

@@ -26,3 +26,13 @@ ssh -i "$SSH_KEY_PATH" "$VM_USER@$VM_HOST" bash <<EOF
 EOF
 
 echo "Deployment complete."
+
+
+# Shell Local helper Script: Connect to Azure VM and deploy BookHead App 
+# To Run this script:
+# 1. Open Git Bash
+# 2. Move to file directory and run:
+#       set +a
+#       
+#       set -a
+#       bash azure-vm-deploy.sh

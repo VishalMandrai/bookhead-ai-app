@@ -60,6 +60,8 @@ target/
 .env-prod
 .envtest
 .env.exampletest
+secrets-azure.txt
+bookheadvm.pem
 
 # Rough Notes Files
 Deployment_debugging_notes.txt
@@ -67,7 +69,7 @@ ROUGH__.py
 rough_about.js
 rough.py
 rough.txt
-
+useful-shell-cmds.txt
 
 # Database
 *.db
@@ -97,7 +99,7 @@ rough.txt
 /redis_data
 /bookhead_rough_app
 /uploads
-/.github
+
 
 # Virtual environments
 .venv/
@@ -130,6 +132,7 @@ tox.ini
 
 # Docker
 .dockerignore
+/deployment-uploads
 
 # OS
 .DS_Store

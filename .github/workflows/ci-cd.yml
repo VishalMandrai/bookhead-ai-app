@@ -1,0 +1,137 @@
+name: CI/CD pipeline
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements-worker-service.txt
+
+      - name: Run pytest
+        run: pytest -q
+
+  build-and-push:
+    name: Build and push Docker images to Azure Container Registry
+    # needs: test
+    runs-on: ubuntu-latest
+    env:
+      ACR_REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+      IMAGE_TAG: ${{ github.sha }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Azure Container Registry
+        uses: docker/login-action@v5
+        with:
+          registry: ${{ secrets.ACR_LOGIN_SERVER }}
+          username: ${{ secrets.ACR_USERNAME }}
+          password: ${{ secrets.ACR_PASSWORD }}
+
+      - name: Build and push FastAPI image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/fastapi/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ACR_REGISTRY }}/bookhead-fastapi:${{ env.IMAGE_TAG }}
+            ${{ env.ACR_REGISTRY }}/bookhead-fastapi:latest
+
+      - name: Build and push Celery worker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: docker/celery-worker/Dockerfile
+          push: true
+          tags: |
+            ${{ env.ACR_REGISTRY }}/bookhead-worker:${{ env.IMAGE_TAG }}
+            ${{ env.ACR_REGISTRY }}/bookhead-worker:latest
+
+  deploy-to-vm:
+    name: Deploy changes to Azure VM
+    needs: build-and-push
+    if: ${{ secrets.VM_HOST != '' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # - name: Copy repository to Azure VM
+      #   uses: appleboy/scp-action@master
+      #   with:
+      #     host: ${{ secrets.VM_HOST }}
+      #     username: ${{ secrets.VM_USER }}
+      #     key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+      #     port: ${{ secrets.VM_SSH_PORT || '22' }}
+      #     source: .
+      #     target: /home/${{ secrets.VM_USER }}/bookhead-app
+
+      - name: Run deployment commands on Azure VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.VM_SSH_PORT || '22' }}
+          script: |
+            cd /home/${{ secrets.VM_USER }}/bookhead-app
+            echo "${{ secrets.ACR_PASSWORD }}" | sudo docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+
+            echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
+
+            docker compose --env-file .deploy.env pull
+            docker compose --env-file .deploy.env up -d --remove-orphans
+            docker image prune -af
+
+          # sudo apt-get update
+          # sudo apt-get install -y docker.io docker-compose-plugin
+          # sudo systemctl enable --now docker
+          # cd /home/${{ secrets.VM_USER }}/bookhead-app
+          # echo "${{ secrets.ACR_PASSWORD }}" | sudo docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+          # sudo docker compose pull
+          # sudo docker compose up -d --build
+
+# Required GitHub secrets:
+# - ACR_LOGIN_SERVER: example myregistry.azurecr.io
+# - ACR_USERNAME: Azure Container Registry username
+# - ACR_PASSWORD: Azure Container Registry password
+# - VM_HOST: optional Azure VM public IP or DNS name
+# - VM_USER: SSH user for Azure VM
+# - VM_SSH_PRIVATE_KEY: SSH private key for Azure VM login
+#
+# Notes:
+# - This workflow runs on merge / push to main and validates tests first.
+# - The build job pushes Docker images to Azure Container Registry.
+# - The VM deploy job is optional and only runs when VM_HOST is set.
+
+
+# VERY IMPORTANT: Use rsync (Best for Repeated Deployments)
+
+# After the first deployment, rsync is much faster because it only transfers changed files.
+            # rsync -avz \
+            # -e "ssh -i bookheadvm_key.pem" \
+            # ./book-shelves-ai-app/ \
+            # azureuser@<VM_IP>:~/bookhead/

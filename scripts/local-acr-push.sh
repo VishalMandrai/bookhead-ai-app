@@ -22,3 +22,6 @@ docker push "$ACR_LOGIN_SERVER/bookhead-worker:$IMAGE_TAG"
 echo "Pushed images:"
 echo "  $ACR_LOGIN_SERVER/bookhead-fastapi:$IMAGE_TAG"
 echo "  $ACR_LOGIN_SERVER/bookhead-worker:$IMAGE_TAG"
+
+
+# Shell Local helper Script: Connect to Azure Container Registry, build images and push images

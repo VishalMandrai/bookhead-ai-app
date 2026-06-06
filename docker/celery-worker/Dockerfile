@@ -51,6 +51,8 @@ COPY requirements-worker-service.txt .
 
 # Install dependencies into custom folder -------------------------------------------------------
 RUN pip install --prefix=/install --no-deps llama-cpp-python==0.2.90
+# necessary runtime dependency removed by "--no-deps"
+RUN pip install --prefix=/install diskcache
 
 RUN pip install --prefix=/install --no-cache-dir -r requirements-worker-service.txt
 

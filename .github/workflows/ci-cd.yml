@@ -73,7 +73,6 @@ jobs:
   deploy-to-vm:
     name: Deploy changes to Azure VM
     needs: build-and-push
-    if: ${{ secrets.BOOKHEAD_VM_HOST != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository

@@ -81,12 +81,12 @@ jobs:
       # - name: Copy repository to Azure VM
       #   uses: appleboy/scp-action@master
       #   with:
-      #     host: ${{ secrets.VM_HOST }}
-      #     username: ${{ secrets.VM_USER }}
-      #     key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-      #     port: ${{ secrets.VM_SSH_PORT || '22' }}
+      #     host: ${{ secrets.BOOKHEAD_VM_HOST }}
+      #     username: ${{ secrets.BOOKHEAD_VM_USER }}
+      #     key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
+      #     port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
       #     source: .
-      #     target: /home/${{ secrets.VM_USER }}/bookhead-app
+      #     target: /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
 
       - name: Run deployment commands on Azure VM
         uses: appleboy/ssh-action@master
@@ -124,13 +124,4 @@ jobs:
 # Notes:
 # - This workflow runs on merge / push to main and validates tests first.
 # - The build job pushes Docker images to Azure Container Registry.
-# - The VM deploy job is optional and only runs when VM_HOST is set.
-
-
-# VERY IMPORTANT: Use rsync (Best for Repeated Deployments)
-
-# After the first deployment, rsync is much faster because it only transfers changed files.
-            # rsync -avz \
-            # -e "ssh -i bookheadvm_key.pem" \
-            # ./book-shelves-ai-app/ \
-            # azureuser@<VM_IP>:~/bookhead/
+# - The VM deploy job runs to restart docker compose with new images.

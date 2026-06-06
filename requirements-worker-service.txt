@@ -2,6 +2,10 @@
 # BookHead AI App – Python dependencies
 # ─────────────────────────────────────────────
 
+# --- Basic Libs ------
+numpy==1.26.4
+scikit-learn==1.8.0
+
 # --- Web framework ---
 fastapi==0.111.0          # Core API framework
 uvicorn[standard]==0.29.0 # ASGI server (with websocket + reload support)
@@ -20,6 +24,7 @@ redis==5.0.4              # Redis client (used by Celery broker + result backend
 torch==2.4.0              # Use CPU wheel; GPU-enabled wheels are MUCH larger.
 torchvision==0.19.0       # Provides pre-trained Faster-RCNN implementation
 Pillow==10.3.0            # Image I/O and manipulation
+opencv-python-headless==4.13.0.92
 
 # --- ML: OCR ---
 # easyocr==1.7.1      # Not USING NOW      # Primary OCR engine (supports spine text, rotated text) 
@@ -37,8 +42,7 @@ qdrant-client==1.9.1      # Client for Qdrant vector DB
 
 # --- ML: Embeddings for Vector DB ---
 sentence-transformers==3.0.1  # Generates text embeddings for vector search
-numpy==1.26.4
-scikit-learn==1.8.0
+
 
 # --- LLM integration ---
 #anthropic==0.28.0           # Anthropic SDK for Claude (recommendations + catalog)

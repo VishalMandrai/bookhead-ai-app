@@ -50,11 +50,12 @@ ENV CMAKE_BUILD_PARALLEL_LEVEL=1
 COPY requirements-worker-service.txt .
 
 # Install dependencies into custom folder -------------------------------------------------------
-RUN pip install --prefix=/install llama-cpp-python==0.2.90
+RUN pip install --prefix=/install --no-deps llama-cpp-python==0.2.90
+
 RUN pip install --prefix=/install --no-cache-dir -r requirements-worker-service.txt
 
 ## Ensuring the correct versions of problematic packages:
-RUN pip install --prefix=/install --force-reinstall numpy==1.26.4
+# RUN pip install --prefix=/install --force-reinstall numpy==1.26.4
 RUN pip install --prefix=/install --force-reinstall packaging==26.2
 
     

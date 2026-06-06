@@ -34,7 +34,7 @@ jobs:
     # needs: test
     runs-on: ubuntu-latest
     env:
-      ACR_REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
+      ACR_REGISTRY: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
       IMAGE_TAG: ${{ github.sha }}
     steps:
       - name: Checkout repository
@@ -46,9 +46,9 @@ jobs:
       - name: Login to Azure Container Registry
         uses: docker/login-action@v5
         with:
-          registry: ${{ secrets.ACR_LOGIN_SERVER }}
-          username: ${{ secrets.ACR_USERNAME }}
-          password: ${{ secrets.ACR_PASSWORD }}
+          registry: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
+          username: ${{ secrets.BOOKHEAD_ACR_USERNAME }}
+          password: ${{ secrets.BOOKHEAD_ACR_PASSWORD }}
 
       - name: Build and push FastAPI image
         uses: docker/build-push-action@v5
@@ -73,7 +73,7 @@ jobs:
   deploy-to-vm:
     name: Deploy changes to Azure VM
     needs: build-and-push
-    if: ${{ secrets.VM_HOST != '' }}
+    if: ${{ secrets.BOOKHEAD_VM_HOST != '' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -92,18 +92,18 @@ jobs:
       - name: Run deployment commands on Azure VM
         uses: appleboy/ssh-action@master
         with:
-          host: ${{ secrets.VM_HOST }}
-          username: ${{ secrets.VM_USER }}
-          key: ${{ secrets.VM_SSH_PRIVATE_KEY }}
-          port: ${{ secrets.VM_SSH_PORT || '22' }}
+          host: ${{ secrets.BOOKHEAD_VM_HOST }}
+          username: ${{ secrets.BOOKHEAD_VM_USER }}
+          key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
           script: |
-            cd /home/${{ secrets.VM_USER }}/bookhead-app
-            echo "${{ secrets.ACR_PASSWORD }}" | sudo docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
+            cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
+            echo "${{ secrets.BOOKHEAD_ACR_PASSWORD }}" | sudo docker login ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }} --username ${{ secrets.BOOKHEAD_ACR_USERNAME }} --password-stdin
 
             echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
 
-            docker compose --env-file .deploy.env pull
-            docker compose --env-file .deploy.env up -d --remove-orphans
+            docker compose --env-file .image_tag.env pull
+            docker compose --env-file .image_tag.env up -d --remove-orphans
             docker image prune -af
 
           # sudo apt-get update
@@ -115,12 +115,12 @@ jobs:
           # sudo docker compose up -d --build
 
 # Required GitHub secrets:
-# - ACR_LOGIN_SERVER: example myregistry.azurecr.io
-# - ACR_USERNAME: Azure Container Registry username
-# - ACR_PASSWORD: Azure Container Registry password
-# - VM_HOST: optional Azure VM public IP or DNS name
-# - VM_USER: SSH user for Azure VM
-# - VM_SSH_PRIVATE_KEY: SSH private key for Azure VM login
+# - BOOKHEAD_ACR_LOGIN_SERVER: example myregistry.azurecr.io
+# - BOOKHEAD_ACR_USERNAME: Azure Container Registry username
+# - BOOKHEAD_ACR_PASSWORD: Azure Container Registry password
+# - BOOKHEAD_VM_HOST: optional Azure VM public IP or DNS name
+# - BOOKHEAD_VM_USER: SSH user for Azure VM
+# - BOOKHEAD_VM_SSH_PRIVATE_KEY: SSH private key for Azure VM login
 #
 # Notes:
 # - This workflow runs on merge / push to main and validates tests first.

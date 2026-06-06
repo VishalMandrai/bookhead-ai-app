@@ -51,15 +51,13 @@ COPY requirements-worker-service.txt .
 
 # Install dependencies into custom folder -------------------------------------------------------
 RUN pip install --prefix=/install llama-cpp-python==0.2.90
-# Uninstall the newer numpy version used for compiling llama-cpp-python
-RUN pip uninstall -y numpy
-
-# requirements file has the correct version of numpy compatible with OpenCV and other dependencies
-# install that version now
 RUN pip install --prefix=/install --no-cache-dir -r requirements-worker-service.txt
 
+## Ensuring the correct versions of problematic packages:
+RUN pip install --prefix=/install --force-reinstall numpy==1.26.4
+RUN pip install --prefix=/install --force-reinstall packaging==26.2
 
-
+    
 # ─────────────────────────────────────────────
 # STAGE 2 — Runtime
 # ─────────────────────────────────────────────

@@ -108,6 +108,7 @@ class DefaultResultMerger(BaseResultMerger):
                     # Recover crop path and original confidence from flagged map
                     crop_image_path=original.crop_image_path if original else "",
                     ocr_confidence=original.confidence if original else 0.0,
+                    ori_ocr_ext_spine_txt=original.raw_title + " " + original.raw_author,
                     source="human_corrected",
                 )
                 records.append(record)

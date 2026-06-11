@@ -1,6 +1,17 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# Shell Local helper Script: Connect to Container Registry, Build & Push docker Images
+# To Run this script:
+# 1. Open Bash Terminal
+# 2. Move to file directory and run these commands:
+#       set -a
+#       source scripts/deploy.env
+#       set +a
+#       bash scripts/local-scr-push.sh
+
+# NOTE: deploy.env must have all the secrets
+
 ACR_LOGIN_SERVER="${ACR_LOGIN_SERVER:?Please set ACR_LOGIN_SERVER}"
 ACR_USERNAME="${ACR_USERNAME:?Please set ACR_USERNAME}"
 ACR_PASSWORD="${ACR_PASSWORD:?Please set ACR_PASSWORD}"
@@ -24,4 +35,3 @@ echo "  $ACR_LOGIN_SERVER/bookhead-fastapi:$IMAGE_TAG"
 echo "  $ACR_LOGIN_SERVER/bookhead-worker:$IMAGE_TAG"
 
 
-# Shell Local helper Script: Connect to Azure Container Registry, build images and push images

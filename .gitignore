@@ -60,7 +60,7 @@ target/
 .env-prod
 .envtest
 .env.exampletest
-secrets-azure.txt
+secrets-azure.env
 bookheadvm.pem
 
 # Rough Notes Files

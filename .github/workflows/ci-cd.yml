@@ -33,7 +33,7 @@ jobs:
 
   build-and-push:
     name: Build and push Docker images to Azure Container Registry
-    # needs: test
+    needs: test
     runs-on: ubuntu-latest
     env:
       ACR_REGISTRY: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
@@ -80,16 +80,6 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # - name: Copy repository to Azure VM
-      #   uses: appleboy/scp-action@master
-      #   with:
-      #     host: ${{ secrets.BOOKHEAD_VM_HOST }}
-      #     username: ${{ secrets.BOOKHEAD_VM_USER }}
-      #     key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
-      #     port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
-      #     source: .
-      #     target: /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
-
       - name: Run deployment commands on Azure VM
         uses: appleboy/ssh-action@master
         with:
@@ -107,13 +97,7 @@ jobs:
             docker compose --env-file .image_tag.env up -d --remove-orphans
             docker image prune -af
 
-          # sudo apt-get update
-          # sudo apt-get install -y docker.io docker-compose-plugin
-          # sudo systemctl enable --now docker
-          # cd /home/${{ secrets.VM_USER }}/bookhead-app
-          # echo "${{ secrets.ACR_PASSWORD }}" | sudo docker login ${{ secrets.ACR_LOGIN_SERVER }} --username ${{ secrets.ACR_USERNAME }} --password-stdin
-          # sudo docker compose pull
-          # sudo docker compose up -d --build
+
 
 # Required GitHub secrets:
 # - BOOKHEAD_ACR_LOGIN_SERVER: example myregistry.azurecr.io

@@ -159,7 +159,7 @@ class TestLibrarianReviewQueue:
         assert body["job_id"] == job_id
 
         # Verify the correction was stored
-        assert stub_review_queue.is_complete(job_id) is True
+        assert svc.is_complete(job_id) is True
 
     def test_incomplete_submission_returns_422(self, client, settings):
         """

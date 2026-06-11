@@ -15,19 +15,20 @@ from unittest.mock import MagicMock, patch
 import pytest
 
 from app.core.exceptions import ReviewAlreadyCompleteError, ReviewSessionNotFoundError
-from app.models.book import BookCorrection, OCRResult
+from app.models.book import BookCorrection, OCRResult, OCRValidatedResult
 from app.services.review_queue import RedisReviewQueueService
 
 
 # ── Helpers ────────────────────────────────────────────────────────────────────
 
 def _flagged(book_id: str | None = None) -> OCRResult:
-    return OCRResult(
+    return OCRValidatedResult(
         book_id=book_id or str(uuid.uuid4()),
         crop_image_path="crops/job/book_0.jpg",
-        raw_title="Blurry Title",
-        raw_author="Unkwn",
-        confidence=0.42,
+        ori_ocr_ext_spine_txt="blury title unknown",
+        title="Blurry Title",
+        author="Unkwn",
+        ocr_confidence=0.42,
         flagged_for_review=True,
     )
 
@@ -133,9 +134,9 @@ class TestRedisReviewQueueService:
         svc, _ = _make_service()
         job_id = str(uuid.uuid4())
         book = _flagged(book_id="fixed-book-id")
-        book.raw_title = "Specific Title"
-        book.raw_author = "Specific Author"
-        book.confidence = 0.38
+        book.title = "Specific Title"
+        book.author = "Specific Author"
+        book.ocr_confidence = 0.38
 
         svc.create_session(job_id, [book])
         pending = svc.get_pending(job_id)

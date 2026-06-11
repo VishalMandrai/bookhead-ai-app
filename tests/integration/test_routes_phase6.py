@@ -29,6 +29,7 @@ def _make_book(title: str = "Dune") -> BookRecord:
     bid = str(uuid.uuid4())
     return BookRecord(
         book_id=bid, title=title, author="Author",
+        ori_ocr_ext_spine_txt= title + " " + "Author",
         crop_image_path=f"crops/job/{bid[:6]}.jpg",
         ocr_confidence=0.90, source="ocr_auto",
         genre="SCI", genre_code="SCI",

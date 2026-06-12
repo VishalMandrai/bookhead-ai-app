@@ -62,6 +62,7 @@ target/
 .env.exampletest
 secrets-azure.env
 bookheadvm.pem
+deployment-uploads
 
 # Rough Notes Files
 Deployment_debugging_notes.txt

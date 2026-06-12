@@ -198,3 +198,145 @@ flowchart LR
 | **CI/CD**              | GitHub Actions                                         |
 
 
+---
+
+
+<br>
+
+
+## 🚀 Installation & Local Usage
+
+### Prerequisites
+
+* **Git**
+* **Docker Desktop** (or Docker Engine with Docker Compose)
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/VishalMandrai/bookhead-ai-app.git
+cd bookhead-ai-app
+```
+
+### 2. Configure Environment Variables
+
+Create a `.env` file in the project root or update the provided template:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file and provide the necessary values like Google Books API Key (free API) generate and add here:
+
+```env
+# Example
+GOOGLE_BOOKS_API_KEY=your_api_key
+```
+
+Refer to `.env.example` for the complete list of configuration options.
+
+### 3. Start the Application
+
+Ensure Docker is running, then launch the application stack:
+
+```bash
+docker compose up
+```
+
+On the first run, Docker will automatically:
+
+* Build all required images
+* Install dependencies
+* Create the application network
+* Start FastAPI, Redis, Celery workers, and supporting services
+
+### 4. Open BookHead AI
+
+Once all services are healthy, open:
+
+```text
+http://localhost:8000
+```
+
+## 🛑 Stopping the Application
+
+```bash
+docker compose down
+```
+
+## 🔄 Rebuilding Images
+
+If you modify the codebase or dependencies:
+
+```bash
+docker compose up --build
+```
+
+
+<br>
+
+## 📜 License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+<div align="center">
+
+*Turn bookshelf photos into personalized reading recommendations and library catalogs.*
+</div>
+
+
+<br>
+
+
+## 👋 Connect With Me
+
+I'm always open to discussing AI, Machine Learning, Software Engineering, and interesting project ideas.
+
+<p align="center">
+  <a href="https://linkedin.com/in/vishal-mandrai999/">
+    <img
+      src="https://img.shields.io/badge/Hi there!-This is Vishal Mandrai-red"
+      height="35"
+    >
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://linkedin.com/in/vishal-mandrai999/">
+    <img
+      src="https://img.shields.io/badge/Got%20any%20recommendation%20or%20suggestions%3F%20Connect%20with%20me...-8A2BE2"
+      height="35"
+    >
+  </a>
+</p>
+
+
+<p align="center">
+  <a href="https://linkedin.com/in/vishal-mandrai999/">
+    <img
+      src="https://img.shields.io/badge/LinkedIn-Connect-blue?logo=linkedin"
+      height="35"
+    >
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://x.com/vishman__">
+    <img
+      src="https://img.shields.io/badge/X-Follow-black?logo=x"
+      height="35"
+    >
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="www.google.com">
+    <img
+      src="https://img.shields.io/badge/My Portfolio-Visit-orange"
+      height="35"
+    >
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="mailto:vishalm.nitt@gmail.com"> 
+    <img 
+        src="https://img.shields.io/badge/Gmail-Contact-EA4335?style=for-the-badge&logo=gmail&logoColor=white"
+        height="35"
+    > 
+  </a>
+</p>

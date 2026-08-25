@@ -101,8 +101,8 @@ h1, h2, h3, h4 {
 }
 
 .logo-icon {
-  width: 36px;
-  height: 20px;
+  width: 290px;
+  height: 50px;
   /* background: var(--brass);
   border-radius: var(--radius); */
   display: flex;
@@ -167,6 +167,109 @@ h1, h2, h3, h4 {
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
+}
+
+/* ── Startup banner overlay ─────────────────────────────────────────────── */
+#startup-banner {
+  position: fixed;
+  inset: 0;
+  z-index: 250;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  /* background: rgba(13, 13, 15, 0.78); */
+  backdrop-filter: blur(4px);
+  padding: 24px;
+}
+
+#startup-banner.hidden {
+  display: none;
+}
+
+.startup-banner-card {
+  position: relative;
+  align-items: center;
+  width: min(750px, 100%);
+  /* background: rgba(250, 247, 242, 0.98); */
+  border: 1px solid rgba(13, 13, 15, 0.12);
+  border-radius: 30px;
+  box-shadow: 0 32px 90px rgba(0, 0, 0, 0.25);
+  /* padding: 5px; */
+}
+
+.startup-banner-image img {
+  width: 100%;
+  display: block;
+  border-radius: calc(var(--radius) * 1.5);
+  /* object-fit: cover;
+  aspect-ratio: 4 / 5; */
+}
+
+.startup-banner-copy h2 {
+  font-size: clamp(2rem, 3vw, 2.75rem);
+  margin-bottom: 14px;
+  color: var(--ink);
+}
+
+.startup-banner-copy p {
+  color: var(--ink-mid);
+  margin-bottom: 14px;
+}
+
+.startup-banner-note {
+  font-size: 0.96rem;
+  color: var(--mist);
+  margin-top: 0;
+}
+
+.startup-banner-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  width: 40px;
+  height: 40px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(13, 13, 15, 0.08);
+  color: var(--ink);
+  font-size: 1.4rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background var(--transition);
+}
+
+.startup-banner-close:hover {
+  background: rgba(13, 13, 15, 0.18);
+}
+
+.startup-banner-close-zone {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 42%;
+  cursor: pointer;
+}
+
+.startup-banner-close-left {
+  left: 0;
+}
+
+.startup-banner-close-right {
+  right: 0;
+}
+
+@media (max-width: 840px) {
+  .startup-banner-card {
+    grid-template-columns: 1fr;
+    gap: 20px;
+    padding: 24px;
+  }
+
+  .startup-banner-close-zone {
+    width: 48%;
+  }
 }
 
 .hero p {

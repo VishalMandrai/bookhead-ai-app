@@ -1,6 +1,6 @@
 <img width="1620" height="1050" alt="image" src="https://github.com/user-attachments/assets/6663a3b2-c7e4-402e-b842-ae2d6a15f242" />
 
-### An AI Lens for ardent readers and librarians alike — powered entirely by open-source AI models.
+### <CENTER>An AI Lens for ardent readers and librarians alike — powered entirely by open-source AI models. [App Link 🔗](http://bookhead.in/) </CENTER>
 
 ![Python](https://img.shields.io/badge/Python-3.9+-blue?logo=python)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend%20API-009688?logo=fastapi)
@@ -16,6 +16,7 @@
 ![OpenCV](https://img.shields.io/badge/OpenCV-Computer%20Vision-5C3EE8?logo=opencv)
 ![HTML5](https://img.shields.io/badge/HTML5-Frontend-E34F26?logo=html5)
 ![JavaScript](https://img.shields.io/badge/JavaScript-Vanilla%20JS-F7DF1E?logo=javascript)
+
 
 <!-- 
 ## 🔦 OVERVIEW

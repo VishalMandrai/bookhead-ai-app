@@ -13,6 +13,17 @@
 </head>
 <body>
 
+<!-- ── Startup banner shown on first app launch ───────────────────────────── -->
+<div id="startup-banner" class="startup-banner" role="dialog" aria-modal="true" aria-labelledby="startup-banner-title">
+  <div class="startup-banner-backdrop"></div>
+  <div class="startup-banner-card">
+    <button type="button" class="startup-banner-close" id="startup-banner-close" aria-label="Close welcome banner">×</button>
+    <div class="startup-banner-image" aria-hidden="true">
+      <img src="/static/css/startup_banner.png" alt="BookHead AI welcome image">
+    </div>
+  </div>
+</div>
+
 <!-- ── Toast container ──────────────────────────────────────────────────── -->
 <div id="toast-container"></div>
 
@@ -20,10 +31,13 @@
 <header class="site-header">
   <div class="container header-inner">
 
-    <div class="logo">
-      <div class="logo-icon">📖</div>
-  BookHead<span>AI</span>
+  <div class="logo">
+    <div class="logo-icon">
+      <img src="/static/css/logo.svg" alt="Book Icon" class="svg-icon">
     </div>
+  </div>
+
+    <!-- BookHead<span>AI</span> -->
 
     <nav class="header-nav" role="tablist" aria-label="Application mode">
       <button class="nav-tab active" data-tab="reader"

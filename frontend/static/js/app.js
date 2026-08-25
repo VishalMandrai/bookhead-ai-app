@@ -31,6 +31,39 @@ function switchTab(tabName) {
   sessionStorage.setItem('booklens-tab', tabName);
 }
 
+function initStartupBanner() {
+  const banner = document.getElementById('startup-banner');
+  if (!banner) return;
+
+  const dismissed = window.localStorage.getItem('bookhead-startup-banner-dismissed');
+  if (dismissed) {
+    banner.classList.add('hidden');
+    return;
+  }
+
+  const closeBanner = () => {
+    banner.classList.add('hidden');
+    try {
+      window.localStorage.setItem('bookhead-startup-banner-dismissed', '1');
+    } catch (err) {
+      // Ignore storage errors in private mode.
+    }
+  };
+
+  banner.addEventListener('click', event => {
+    const target = event.target;
+    if (target.closest('#startup-banner-close') || target.closest('.startup-banner-close-zone')) {
+      closeBanner();
+    }
+  });
+
+  document.addEventListener('keydown', event => {
+    if (event.key === 'Escape' && !banner.classList.contains('hidden')) {
+      closeBanner();
+    }
+  });
+}
+
 // ── Bootstrap ─────────────────────────────────────────────────────────────────
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -47,4 +80,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initReader();
   initLibrarian();
   initAbout();
+  initStartupBanner();
 });

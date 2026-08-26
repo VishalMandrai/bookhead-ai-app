@@ -23,10 +23,11 @@ services:
       - ./models:/app/models            
                                         # Gemma-2B LLM model file will be stored here
                                         # also, the genre_embeddings.npy file
-      # - ./app:/app/app                  # Hot-reload: mount source code; use only during development
-      #                                   # Bake the source code in Image for production
+          
+      - ./app:/app/app                  # Hot-reload: mount source code; use only during development
+                                        # Bake the source code in Image for production
     env_file:
-      - .env-prod
+      - .env-example
     depends_on:
       - redis
       - qdrant
@@ -58,7 +59,7 @@ services:
       - ./models:/app/models
       # - ./app:/app/app                  #Hot-reload: mount source code; use only during development
     env_file:
-      - .env-prod
+      - .env-example
     depends_on:
       - redis
       - qdrant

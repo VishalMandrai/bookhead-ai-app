@@ -72,30 +72,30 @@ jobs:
             ${{ env.ACR_REGISTRY }}/bookhead-worker:${{ env.IMAGE_TAG }}
             ${{ env.ACR_REGISTRY }}/bookhead-worker:latest
 
-  # deploy-to-vm:
-  #   name: Deploy changes to Azure VM
-  #   needs: build-and-push
-  #   runs-on: ubuntu-latest
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
+  deploy-to-vm:
+    name: Deploy changes to Azure VM
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-  #     - name: Run deployment commands on Azure VM
-  #       uses: appleboy/ssh-action@master
-  #       with:
-  #         host: ${{ secrets.BOOKHEAD_VM_HOST }}
-  #         username: ${{ secrets.BOOKHEAD_VM_USER }}
-  #         key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
-  #         port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
-  #         script: |
-  #           cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
-  #           echo "${{ secrets.BOOKHEAD_ACR_PASSWORD }}" | sudo docker login ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }} --username ${{ secrets.BOOKHEAD_ACR_USERNAME }} --password-stdin
+      - name: Run deployment commands on Azure VM
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.BOOKHEAD_VM_HOST }}
+          username: ${{ secrets.BOOKHEAD_VM_USER }}
+          key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
+          port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
+          script: |
+            cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
+            echo "${{ secrets.BOOKHEAD_ACR_PASSWORD }}" | sudo docker login ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }} --username ${{ secrets.BOOKHEAD_ACR_USERNAME }} --password-stdin
 
-  #           echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
+            echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
 
-  #           docker compose --env-file .image_tag.env pull
-  #           docker compose --env-file .image_tag.env up -d --remove-orphans
-  #           docker image prune -af
+            docker compose --env-file .image_tag.env pull
+            docker compose --env-file .image_tag.env up -d --remove-orphans
+            docker image prune -af
 
 
 

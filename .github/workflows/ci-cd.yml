@@ -111,3 +111,4 @@ jobs:
 # - This workflow runs on merge / push to main and validates tests first.
 # - The build job pushes Docker images to Azure Container Registry.
 # - The VM deploy job runs to restart docker compose with new images.
+

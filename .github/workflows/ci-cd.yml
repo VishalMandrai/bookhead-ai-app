@@ -4,98 +4,250 @@ on:
   push:
     branches:
       - master
-  pull_request:
-    branches:
-      - master
 
 jobs:
-  # test:
-  #   name: Run tests
-  #   runs-on: ubuntu-latest
-  #   env:
-  #     UPLOAD_DIR: ./uploads
-  #   steps:
-  #     - name: Checkout repository
-  #       uses: actions/checkout@v4
 
-  #     - name: Set up Python
-  #       uses: actions/setup-python@v5
-  #       with:
-  #         python-version: '3.12'
-
-  #     - name: Install dependencies
-  #       run: |
-  #         python -m pip install --upgrade pip
-  #         pip install -r requirements-worker-service.txt
-
-  #     - name: Run pytest
-  #       run: pytest -q
-
+  # ============================================================
+  # BUILD & PUSH DOCKER IMAGES
+  # ============================================================
   build-and-push:
-    name: Build and push Docker images to Azure Container Registry
-    # needs: test
+    name: Build and push Docker images to GCP Artifact Registry
     runs-on: ubuntu-latest
-    env:
-      ACR_REGISTRY: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
-      IMAGE_TAG: ${{ github.sha }}
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      GCP_PROJECT_ID: project-47d3db21-e10a-4c57-9a3
+      GCP_REGION: us-east4
+      ARTIFACT_REGISTRY: us-east4-docker.pkg.dev
+      ARTIFACT_REPOSITORY: bookhead
+      IMAGE_TAG: ${{ github.sha }}
+
+    steps:
+
+      # ----------------------------------------------------------
+      # Checkout
+      # ----------------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # ----------------------------------------------------------
+      # Docker Buildx
+      # ----------------------------------------------------------
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Login to Azure Container Registry
-        uses: docker/login-action@v3
+      # ----------------------------------------------------------
+      # Authenticate GitHub Actions -> GCP using OIDC/WIF
+      # ----------------------------------------------------------
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
         with:
-          registry: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
-          username: ${{ secrets.BOOKHEAD_ACR_USERNAME }}
-          password: ${{ secrets.BOOKHEAD_ACR_PASSWORD }}
+          project_id: ${{ env.GCP_PROJECT_ID }}
+          workload_identity_provider: projects/765079156776/locations/global/workloadIdentityPools/github/providers/github-bookhead
+          service_account: bookhead-cicd@project-47d3db21-e10a-4c57-9a3.iam.gserviceaccount.com
 
+      # ----------------------------------------------------------
+      # Install/configure gcloud
+      # ----------------------------------------------------------
+      - name: Set up Google Cloud CLI
+        uses: google-github-actions/setup-gcloud@v3
+
+      # ----------------------------------------------------------
+      # Authenticate Docker to Artifact Registry
+      # ----------------------------------------------------------
+      - name: Authenticate Docker to Artifact Registry
+        run: |
+          gcloud auth print-access-token | \
+            docker login \
+              -u oauth2accesstoken \
+              --password-stdin \
+              https://${{ env.ARTIFACT_REGISTRY }}
+
+      # ----------------------------------------------------------
+      # Build & Push FastAPI image
+      # ----------------------------------------------------------
       - name: Build and push FastAPI image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/fastapi/Dockerfile
           push: true
           tags: |
-            ${{ env.ACR_REGISTRY }}/bookhead-fastapi:${{ env.IMAGE_TAG }}
-            ${{ env.ACR_REGISTRY }}/bookhead-fastapi:latest
+            ${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/bookhead-fastapi:${{ env.IMAGE_TAG }}
+            ${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/bookhead-fastapi:latest
 
+      # ----------------------------------------------------------
+      # Build & Push Celery worker image
+      # ----------------------------------------------------------
       - name: Build and push Celery worker image
-        uses: docker/build-push-action@v5
+        uses: docker/build-push-action@v6
         with:
           context: .
           file: docker/celery-worker/Dockerfile
           push: true
           tags: |
-            ${{ env.ACR_REGISTRY }}/bookhead-worker:${{ env.IMAGE_TAG }}
-            ${{ env.ACR_REGISTRY }}/bookhead-worker:latest
+            ${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/bookhead-worker:${{ env.IMAGE_TAG }}
+            ${{ env.ARTIFACT_REGISTRY }}/${{ env.GCP_PROJECT_ID }}/${{ env.ARTIFACT_REPOSITORY }}/bookhead-worker:latest
 
+
+  # ============================================================
+  # DEPLOY TO GCP VM
+  # ============================================================
   deploy-to-vm:
-    name: Deploy changes to Azure VM
+    name: Deploy to GCP VM
     needs: build-and-push
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
 
-      - name: Run deployment commands on Azure VM
+    steps:
+
+      - name: Deploy changes to GCP VM
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.BOOKHEAD_VM_HOST }}
           username: ${{ secrets.BOOKHEAD_VM_USER }}
           key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
           port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
-          script: |
-            cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
-            echo "${{ secrets.BOOKHEAD_ACR_PASSWORD }}" | sudo docker login ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }} --username ${{ secrets.BOOKHEAD_ACR_USERNAME }} --password-stdin
 
+          script: |
+
+            set -e
+
+            echo "=========================================="
+            echo "Starting BookHead deployment"
+            echo "=========================================="
+
+            cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
+
+            echo "Current directory:"
+            pwd
+
+            echo "Writing image tag..."
             echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
 
-            docker compose --env-file .image_tag.env pull
-            docker compose --env-file .image_tag.env up -d --remove-orphans
+            echo "Pulling new Docker images..."
+            docker compose \
+              --env-file .image_tag.env \
+              pull
+
+            echo "Starting updated containers..."
+            docker compose \
+              --env-file .image_tag.env \
+              up -d \
+              --remove-orphans
+
+            echo "Removing unused Docker images..."
             docker image prune -af
+
+            echo "=========================================="
+            echo "BookHead deployment completed"
+            echo "Image tag: ${{ github.sha }}"
+            echo "=========================================="
+
+#####################################################################################
+############################# Azure CI/CD Deployment ################################
+#####################################################################################
+
+# name: CI/CD pipeline
+
+# on:
+#   push:
+#     branches:
+#       - master
+#   pull_request:
+#     branches:
+#       - master
+
+# jobs:
+#   # test:
+#   #   name: Run tests
+#   #   runs-on: ubuntu-latest
+#   #   env:
+#   #     UPLOAD_DIR: ./uploads
+#   #   steps:
+#   #     - name: Checkout repository
+#   #       uses: actions/checkout@v4
+
+#   #     - name: Set up Python
+#   #       uses: actions/setup-python@v5
+#   #       with:
+#   #         python-version: '3.12'
+
+#   #     - name: Install dependencies
+#   #       run: |
+#   #         python -m pip install --upgrade pip
+#   #         pip install -r requirements-worker-service.txt
+
+#   #     - name: Run pytest
+#   #       run: pytest -q
+
+#   build-and-push:
+#     name: Build and push Docker images to Azure Container Registry
+#     # needs: test
+#     runs-on: ubuntu-latest
+#     env:
+#       ACR_REGISTRY: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
+#       IMAGE_TAG: ${{ github.sha }}
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Set up Docker Buildx
+#         uses: docker/setup-buildx-action@v3
+
+#       - name: Login to Azure Container Registry
+#         uses: docker/login-action@v3
+#         with:
+#           registry: ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }}
+#           username: ${{ secrets.BOOKHEAD_ACR_USERNAME }}
+#           password: ${{ secrets.BOOKHEAD_ACR_PASSWORD }}
+
+#       - name: Build and push FastAPI image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           file: docker/fastapi/Dockerfile
+#           push: true
+#           tags: |
+#             ${{ env.ACR_REGISTRY }}/bookhead-fastapi:${{ env.IMAGE_TAG }}
+#             ${{ env.ACR_REGISTRY }}/bookhead-fastapi:latest
+
+#       - name: Build and push Celery worker image
+#         uses: docker/build-push-action@v5
+#         with:
+#           context: .
+#           file: docker/celery-worker/Dockerfile
+#           push: true
+#           tags: |
+#             ${{ env.ACR_REGISTRY }}/bookhead-worker:${{ env.IMAGE_TAG }}
+#             ${{ env.ACR_REGISTRY }}/bookhead-worker:latest
+
+#   deploy-to-vm:
+#     name: Deploy changes to Azure VM
+#     needs: build-and-push
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout repository
+#         uses: actions/checkout@v4
+
+#       - name: Run deployment commands on Azure VM
+#         uses: appleboy/ssh-action@master
+#         with:
+#           host: ${{ secrets.BOOKHEAD_VM_HOST }}
+#           username: ${{ secrets.BOOKHEAD_VM_USER }}
+#           key: ${{ secrets.BOOKHEAD_VM_SSH_PRIVATE_KEY }}
+#           port: ${{ secrets.BOOKHEAD_VM_SSH_PORT || '22' }}
+#           script: |
+#             cd /home/${{ secrets.BOOKHEAD_VM_USER }}/bookhead
+#             echo "${{ secrets.BOOKHEAD_ACR_PASSWORD }}" | sudo docker login ${{ secrets.BOOKHEAD_ACR_LOGIN_SERVER }} --username ${{ secrets.BOOKHEAD_ACR_USERNAME }} --password-stdin
+
+#             echo "IMAGE_TAG=${{ github.sha }}" > .image_tag.env
+
+#             docker compose --env-file .image_tag.env pull
+#             docker compose --env-file .image_tag.env up -d --remove-orphans
+#             docker image prune -af
 
 
 

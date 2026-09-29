@@ -30,14 +30,44 @@ jobs:
       - name: Set up gcloud
         uses: google-github-actions/setup-gcloud@v3
 
-      - name: Configure Docker
+      - name: Verify GCP authentication
         run: |
-          gcloud auth configure-docker \
-            ${{ env.GAR_LOCATION }}-docker.pkg.dev \
-            --quiet
+          echo "=== GCP account ==="
+          gcloud auth list
 
-      - name: Set up Buildx
-        uses: docker/setup-buildx-action@v3
+          echo "=== GCP project ==="
+          gcloud config get-value project
+
+          echo "=== Testing access token ==="
+          gcloud auth print-access-token > /tmp/gcp-token
+
+          if [ ! -s /tmp/gcp-token ]; then
+            echo "Failed to obtain GCP access token"
+            exit 1
+          fi
+
+          echo "GCP authentication successful."
+
+      - name: Authenticate Docker to Artifact Registry
+        run: |
+          gcloud auth print-access-token | \
+            docker login \
+              -u oauth2accesstoken \
+              --password-stdin \
+              https://us-east4-docker.pkg.dev
+
+      - name: Verify Docker authentication
+        run: |
+          cat ~/.docker/config.json
+
+      # - name: Configure Docker
+      #   run: |
+      #     gcloud auth configure-docker \
+      #       ${{ env.GAR_LOCATION }}-docker.pkg.dev \
+      #       --quiet
+
+      # - name: Set up Buildx
+      #   uses: docker/setup-buildx-action@v3
 
       - name: Build FastAPI
         run: |

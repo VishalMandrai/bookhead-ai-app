@@ -1,0 +1,31 @@
+name: Test GCP OIDC
+
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: project-47d3db21-e10a-4c57-9a3
+          workload_identity_provider: projects/765079156776/locations/global/workloadIdentityPools/github/providers/github-bookhead
+          service_account: bookhead-cicd@project-47d3db21-e10a-4c57-9a3.iam.gserviceaccount.com
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Verify authentication
+        run: |
+          gcloud auth list
+          gcloud config get-value project

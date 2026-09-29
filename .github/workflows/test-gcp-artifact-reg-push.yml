@@ -1,0 +1,52 @@
+name: Test Artifact Registry
+
+on:
+  workflow_dispatch:
+
+env:
+  PROJECT_ID: project-47d3db21-e10a-4c57-9a3
+  GAR_LOCATION: us-east4
+  GAR_REPOSITORY: bookhead
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v3
+        with:
+          project_id: ${{ env.PROJECT_ID }}
+          workload_identity_provider: projects/765079156776/locations/global/workloadIdentityPools/github/providers/github-bookhead
+          service_account: bookhead-cicd@project-47d3db21-e10a-4c57-9a3.iam.gserviceaccount.com
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v3
+
+      - name: Configure Docker
+        run: |
+          gcloud auth configure-docker \
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev \
+            --quiet
+
+      - name: Set up Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build FastAPI
+        run: |
+          docker build \
+            -f docker/fastapi/Dockerfile \
+            -t ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/bookhead-fastapi:test \
+            .
+
+      - name: Push FastAPI
+        run: |
+          docker push \
+            ${{ env.GAR_LOCATION }}-docker.pkg.dev/${{ env.PROJECT_ID }}/${{ env.GAR_REPOSITORY }}/bookhead-fastapi:test
